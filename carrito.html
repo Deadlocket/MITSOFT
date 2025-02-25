@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda</title>
+    <link rel="shortcut icon" href="images/ico/mit-soft.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #333; color: white; }
+        .navbar .nav-links { display: flex; gap: 15px; }
+        .navbar a { color: white; text-decoration: none; padding: 10px 15px; font-size: 18px; }
+        .navbar a:hover { background: #555; border-radius: 5px; }
+        
+        /* Título "Productos" dentro del navbar */
+        .navbar h1 {
+            margin: 0;
+            text-align: center;
+            flex: 1;
+            color: white;
+            font-size: 19px;
+        }
+
+        .productos { display: flex; flex-wrap: wrap; justify-content: center; padding: 20px; }
+        .producto { border: 1px solid #ccc; padding: 15px; margin: 15px; background: white; text-align: center; border-radius: 5px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); width: 200px; }
+        .producto h2 { font-size: 20px; margin-bottom: 10px; }
+        .producto p { font-size: 16px; color: #555; }
+        .producto button { background: #226478; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 5px; }
+        .producto button:hover { background: #5da8c8; }
+
+        /* Resaltar productos al pasar el mouse */
+        .producto:hover { transform: scale(1.05); transition: transform 0.3s ease, box-shadow 0.3s ease;box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);}
+
+
+        /* Destacar productos recomendados con una etiqueta */
+        .producto.destacado { border: 2px solid gold; position: relative; }
+
+        /* Etiqueta de producto recomendado */
+        .producto.destacado::before { content: "🔥 Recomendado"; position: absolute; top: 10px; left: 10px;background: gold; color: black; padding: 5px 10px; font-size: 12px; font-weight: bold;border-radius: 5px; }
+
+
+        /* Carrito en el Navbar */
+        .carrito-navbar { position: relative; cursor: pointer; background: #007bff; padding: 10px 15px; border-radius: 5px; }
+        .carrito-navbar:hover { background: #58a9ff; }
+        .carrito-navbar span { font-weight: bold; }
+        .carrito-navbar::after { content: attr(data-count); font-size: 14px; color: white; background: rgb(15, 84, 87); border-radius: 50%; padding: 3px 7px; position: absolute; top: -5px; right: -5px; display: ${carrito.length > 0 ? 'block' : 'none'}; }
+
+        /* Carrito desplegable */
+        .carrito { display: none; position: absolute; top: 50px; right: 0; background: white; padding: 15px; border-radius: 5px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); width: 250px; z-index: 1000; }
+        .carrito h3 { margin: 0 0 10px; text-align: center; }
+        .carrito ul { list-style: none; padding: 0; }
+        .carrito ul li { background: #f4f4f4; margin: 5px 0; padding: 5px; border-radius: 3px; display: flex; justify-content: space-between; align-items: center; }
+        .carrito ul li button { background: rgb(255, 98, 98); color: white; border: none; padding: 2px 4px; cursor: pointer; border-radius: 3px; font-size: 12px; width: 24px; height: 24px; text-align: center; }
+        .carrito button { background: #007bff; color: white; border: none; padding: 10px; cursor: pointer; width: 100%; border-radius: 5px; }
+        .carrito button:hover { background: #0056b3; }
+
+        .producto-img { width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; }
+
+        .search-bar { text-align: center; padding: 10px; }
+        .search-bar input { padding: 8px; width: 300px; border: 1px solid #ccc; border-radius: 5px; }
+        .search-bar { position: relative; text-align: center; padding: 10px; }
+
+        .search-bar input { padding: 8px; width: 300px; border: 1px solid #ccc; border-radius: 5px; padding-right: 30px; /* Espacio para el icono */ }
+
+        .search-bar i { position: absolute; top: 50%; right: 470px; transform: translateY(-50%); color: #555; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="nav-links">
+            <a href="index.html">Inicio</a>
+        </div>
+
+        <!-- Título "Productos" centrado dentro del Navbar -->
+        <h1>Productos</h1>
+
+        <div class="carrito-navbar" onclick="toggleCarrito()" data-count="0">
+            🛒 <span>Carrito</span>
+        </div>
+    </div>
+
+    <!-- Carrito de Compras Desplegable -->
+    <div class="carrito" id="carrito">
+        <h3>Carrito</h3>
+        <ul id="lista-carrito"></ul>
+        <p>Total: $<span id="total">0</span></p>
+        <button onclick="enviarPedido()">Hacer Pedido</button>
+    </div>
+
+    <h1 style="text-align: center;">Tienda Online</h1>
+
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Buscar productos...">
+        <i class="fas fa-search"></i>
+    </div>
+
+    <div class="productos">
+        <div class="producto" data-nombre="Computadora Todo en Uno" data-precio="2400000">
+            <img src="images/productos/Computadora All In One.jpg" class="producto-img" alt="Laptop HP">
+            <h2>PC All In One HP</h2>
+            <p>Precio: $2.400.000</p>
+            <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+        </div>
+
+            <div class="producto" data-nombre="Computadora Todo en Uno" data-precio="3500000">
+                <img src="images/productos/Computadora Gaming.jpg" class="producto-img" alt="Laptop HP">
+                <h2>PC Gaming</h2>
+                <p>Precio: $3.500.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Computadora Mini" data-precio="1790000">
+                <img src="images/productos/Computadora Mini.jpg" class="producto-img" alt="Laptop HP">
+                <h2>PC Mini</h2>
+                <p>Precio: $1.790.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Computadora Oficina" data-precio="3000000">
+                <img src="images/productos/Computadora Oficina.jpg" class="producto-img" alt="Laptop HP">
+                <h2>PC Oficina</h2>
+                <p>Precio: $3.000.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Portatil Gaming" data-precio="11800000">
+                <img src="images/productos/Portatil Gaming.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Portatil Gaming ASUS</h2>
+                <p>Precio: $11.800.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Portatil Ultrabook" data-precio="4300000">
+                <img src="images/productos/Portatil Ultrabook.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Portatil Ultrabook Lenovo</h2>
+                <p>Precio: $4.300.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Portatil 2 en 1" data-precio="4600000">
+                <img src="images/productos/Portatil 2 en 1.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Portatil 2 en 1 Lenovo</h2>
+                <p>Precio: $4.600.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Apple MacBook Air 13.6" data-precio="3100000">
+                <img src="images/productos/Apple MacBook Air Portatil.webp" class="producto-img" alt="Laptop HP">
+                <h2>Apple MacBook Air 13.6</h2>
+                <p>Precio: $4.400.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Apple iMac 27 Escritorio" data-precio="3500000">
+                <img src="images/productos/Apple iMac 27 Escritorio.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Apple iMac 27 Escritorio</h2>
+                <p>Precio: $3.500.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Portatil HP" data-precio="3100000">
+                <img src="images/productos//Portatil HP.png" class="producto-img" alt="Laptop HP">
+                <h2>Portatil HP</h2>
+                <p>Precio: $3.100.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Memoria RAM DDR5" data-precio="600000">
+                <img src="images/productos/Memorias RAM DDR5 Gaming.png" class="producto-img" alt="Laptop HP">
+                <h2>Memoria RAM DDR5 Gaming</h2>
+                <p>Precio: $600.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Memoria RAM DDR4" data-precio="350000">
+                <img src="images/productos/Memorias RAM DDR4 Gaming.png" class="producto-img" alt="Laptop HP">
+                <h2>Memoria RAM DDR4 Gaming</h2>
+                <p>Precio: $350.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Memoria RAM DDR5" data-precio="600000">
+                <img src="images/productos/Memorias RAM DDR5.png" class="producto-img" alt="Laptop HP">
+                <h2>Memoria RAM DDR5</h2>
+                <p>Precio: $600.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Memoria RAM DDR4" data-precio="500000">
+                <img src="images/productos/Memorias RAM DDR4.png" class="producto-img" alt="Laptop HP">
+                <h2>Memoria RAM DDR4</h2>
+                <p>Precio: $500.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Disco Duro HDD" data-precio="204000">
+                <img src="images/productos/Disco Duro HDD.jpeg" class="producto-img" alt="Laptop HP">
+                <h2>Disco Duro HDD Western</h2>
+                <p>Precio: $204.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Disco Duro SDD" data-precio="160000">
+                <img src="images/productos/Disco Duro SDD.jpeg" class="producto-img" alt="Laptop HP">
+                <h2>Disco Duro SDD Crucial</h2>
+                <p>Precio: $160.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Disco Duro SDD Gaming" data-precio="760000">
+                <img src="images/productos/Disco Duro SDD Gaming.jpeg" class="producto-img" alt="Laptop HP">
+                <h2>Disco Duro SDD Gaming</h2>
+                <p>Precio: $760.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Gabinete ATX" data-precio="250000">
+                <img src="images/productos/Gabinete ATX.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Gabinete ATX</h2>
+                <p>Precio: $250.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Gabinete Micro ATX" data-precio="180000">
+                <img src="images/productos/Gabinete Micro ATX.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Gabinete Micro ATX</h2>
+                <p>Precio: $180.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Gabinete Gaming" data-precio="280000">
+                <img src="images/productos//Gabinete Gaming.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Gabinete Gaming</h2>
+                <p>Precio: $280.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Ventilador CPU" data-precio="150000">
+                <img src="images/productos/Ventilador de CPU.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Ventilador CPU</h2>
+                <p>Precio: $150.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Ventilador Gabinete" data-precio="400000">
+                <img src="images/productos/Ventilador de Gabinete.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Ventilador Gabinete</h2>
+                <p>Precio: $400.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Ventilador Liquido CPU" data-precio="665000">
+                <img src="images/productos/Ventilador Liquido CPU.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Ventilador Liquido CPU</h2>
+                <p>Precio: $665.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Ventilador para Laptop" data-precio="90000">
+                <img src="images/productos/Ventiladores Laptop.jpg" class="producto-img" alt="Laptop HP">
+                <h2>Ventilador para Laptop</h2>
+                <p>Precio: $90.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Procesador Intel Core i9" data-precio="2600000">
+                <img src="images/productos/Procesador Intel Core i9.jpeg" class="producto-img" alt="Laptop HP">
+                <h2>Procesador Intel Core i9</h2>
+                <p>Precio: $2.600.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Procesador Intel Core i7" data-precio="1800000">
+                <img src="images/productos/Procesador Intel Core i7.jpeg" class="producto-img" alt="Laptop HP">
+                <h2>Procesador Intel Core i7</h2>
+                <p>Precio: $1.800.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Procesador AMD Ryzen 9" data-precio="2900000">
+                <img src="images/productos/Procesador AMD Ryzen 9.jpeg" class="producto-img" alt="Laptop HP">
+                <h2>Procesador AMD Ryzen 9</h2>
+                <p>Precio: $2.900.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Procesador AMD Ryzen 7" data-precio="1400000">
+                <img src="images/productos/Procesador AMD Ryzen 7.jpeg" class="producto-img" alt="Laptop HP">
+                <h2>Procesador AMD Ryzen 7</h2>
+                <p>Precio: $1.400.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Pasta Termica" data-precio="60000">
+                <img src="images/productos/Pasta Termica.webp" class="producto-img" alt="Laptop HP">
+                <h2>Pasta Termica</h2>
+                <p>Precio: $60.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Placa Madre ATX Gigabyte" data-precio="700000">
+                <img src="images/productos/Placa Madre ATX.webp" class="producto-img" alt="Laptop HP">
+                <h2>Placa Madre ATX Gigabyte</h2>
+                <p>Precio: $700.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Placa Madre Micro ATX" data-precio="310000">
+                <img src="images/productos/Placa Micro ATX.webp" class="producto-img" alt="Laptop HP">
+                <h2>Placa Madre Micro ATX</h2>
+                <p>Precio: $310.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Placa Madre Gaming" data-precio="2100000">
+                <img src="images/productos/Placa Madre Gaming.webp" class="producto-img" alt="Laptop HP">
+                <h2>Placa Madre Gaming</h2>
+                <p>Precio: $2.100.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Fuente de Alimentacion ATX" data-precio="180000">
+                <img src="images/productos/Fuente de Alimentación ATX.webp" class="producto-img" alt="Laptop HP">
+                <h2>Fuente de Alimentacion ATX</h2>
+                <p>Precio: $180.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Fuente de Alimentacion SFX Corsair" data-precio="1400000">
+                <img src="images/productos/Fuente de Alimentación SFX.webp" class="producto-img" alt="Laptop HP">
+                <h2>Fuente de Alimentacion SFX Corsair</h2>
+                <p>Precio: $1.400.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Fuente de Alimentacion Modular" data-precio="680000">
+                <img src="images/productos/Fuente de Alimentación Modular.webp" class="producto-img" alt="Laptop HP">
+                <h2>Fuente de Alimentacion Modular</h2>
+                <p>Precio: $680.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Fuente de Alimentacion Gaming" data-precio="2500000">
+                <img src="images/productos/Fuente de Alimentación Gaming.webp" class="producto-img" alt="Laptop HP">
+                <h2>Fuente de Alimentacion Gaming</h2>
+                <p>Precio: $2.500.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Teclado Mecanico RK Royale" data-precio="276000">
+                <img src="images/productos/Teclado Mecanico RK Royale.webp" class="producto-img" alt="Laptop HP">
+                <h2>Teclado Mecanico RK Royale</h2>
+                <p>Precio: $276.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Mouse Inalambrico ASUS" data-precio="620000">
+                <img src="images/productos/Mouse Inalambrico ASUS.webp" class="producto-img" alt="Laptop HP">
+                <h2>Mouse Inalambrico ASUS</h2>
+                <p>Precio: $620.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Mouse HP" data-precio="30000">
+                <img src="images/productos/Mouse HP.webp" class="producto-img" alt="Laptop HP">
+                <h2>Mouse HP</h2>
+                <p>Precio: $30.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+            <div class="producto" data-nombre="Teclado HP" data-precio="60000">
+                <img src="images/productos/Teclado HP.webp" class="producto-img" alt="Laptop HP">
+                <h2>Teclado HP</h2>
+                <p>Precio: $60.000</p>
+                <button onclick="agregarAlCarrito(this)">Agregar al carrito</button>
+            </div>
+
+    <script>
+        let carrito = [];
+
+        function toggleCarrito() {
+        let carritoDiv = document.getElementById('carrito');
+        carritoDiv.style.display = carritoDiv.style.display === 'block' ? 'none' : 'block';
+    }
+
+        function agregarAlCarrito(boton) {
+        let producto = boton.parentElement;
+        let nombre = producto.getAttribute('data-nombre');
+        let precio = parseFloat(producto.getAttribute('data-precio'));
+        carrito.push({ nombre, precio });
+        actualizarCarrito();
+    }
+
+        function actualizarCarrito() {
+        let lista = document.getElementById('lista-carrito');
+        let total = 0;
+        let carritoNavbar = document.querySelector('.carrito-navbar');
+    
+        lista.innerHTML = '';
+        carrito.forEach((item, index) => {
+        lista.innerHTML += `<li>${item.nombre} - $${formatearPrecio(item.precio)} 
+            <button onclick="eliminarDelCarrito(${index})">❌</button></li>`;
+        total += item.precio;
+    });
+
+        document.getElementById('total').innerText = formatearPrecio(total);
+        carritoNavbar.setAttribute('data-count', carrito.length);
+    }
+
+        function eliminarDelCarrito(index) {
+        carrito.splice(index, 1);
+        actualizarCarrito();
+    }
+
+        function enviarPedido() {
+        let mensaje = "Hola, quiero comprar:\n";
+        carrito.forEach(item => {
+        mensaje += `- ${item.nombre}: $${formatearPrecio(item.precio)}\n`;
+    });
+        let total = document.getElementById('total').innerText;
+        mensaje += `Total a pagar: $${total}`;
+        let url = `https://api.whatsapp.com/send?phone=+573045248966&text=${encodeURIComponent(mensaje)}`;
+        window.open(url, '_blank');
+    }
+
+        function formatearPrecio(valor) {
+        return valor.toLocaleString("es-CO", {
+        maximumFractionDigits: 2
+        });
+    }
+
+        // Filtro de búsqueda
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', buscarProductos);
+
+        function buscarProductos() {
+        const filtro = searchInput.value.toLowerCase();
+        const productos = document.querySelectorAll('.producto');
+
+        productos.forEach(producto => {
+        const nombre = producto.getAttribute('data-nombre').toLowerCase();
+        if (nombre.includes(filtro)) {
+            producto.style.display = 'block';
+        } else {
+            producto.style.display = 'none';
+        }
+    });
+}
+
+</script>
+
+</body>
+</html>
